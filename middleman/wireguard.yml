@@ -46,6 +46,17 @@
       client_private_key: "{{ key_files.results[2].stdout }}"
       client_public_key: "{{ key_files.results[3].stdout }}"
 
+  - name: create middle man client conf
+    local_action: template src=templates/wg0-client.conf dest=middleman_client.conf
+
+  - name: add gate client conf
+    copy:
+      src: ../gate/gate_client.conf
+      dest: "/etc/wireguard/gate0.conf"
+      owner: root
+      group: root
+      mode: 0600
+
   - name: Generate server config
     template:
       src: "templates/wg0-server.conf"
@@ -84,6 +95,17 @@
 
   - name: Set up unbound for DNS
     include: dns.yml
+
+  - name: Add route table middleman
+    lineinfile:
+      path: /etc/iproute2/rt_tables
+      line: '1 middleman'
+
+  - name: Enable and wireguard interface
+    systemd:
+      name: wg-quick@gate0
+      enabled: yes
+      state: started
 
   - name: Reboot the server
     shell: sleep 2 && shutdown -r now

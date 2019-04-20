@@ -46,6 +46,9 @@
       client_private_key: "{{ key_files.results[2].stdout }}"
       client_public_key: "{{ key_files.results[3].stdout }}"
 
+  - name: create client conf
+    local_action: template src=templates/gate0.conf dest=gate_client.conf
+
   - name: Generate server config
     template:
       src: "templates/wg0-server.conf"
